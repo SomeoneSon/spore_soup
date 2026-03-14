@@ -298,8 +298,25 @@ function syncShadowPools() {
 // --- Game loop ------------------------------------------------------------
 
 let lastTime = 0;
+let _paused = false;
+
+// Pause simulation when tab is hidden (OBS, minimize, tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    _paused = true;
+  } else {
+    _paused = false;
+    lastTime = 0;  // reset so first frame back doesn't spike
+  }
+});
 
 function loop(timestamp) {
+  // After returning from hidden tab, reset timing
+  if (lastTime === 0 || timestamp - lastTime > 500) {
+    lastTime = timestamp;
+    requestAnimationFrame(loop);
+    return;
+  }
   const rawDt = Math.min((timestamp - lastTime) / 1000, 0.05);
   lastTime = timestamp;
 
@@ -311,6 +328,13 @@ function loop(timestamp) {
     return;
   }
   hudEl.style.display = '';
+
+  // Skip simulation when tab is hidden
+  if (_paused) {
+    updateHUD();
+    requestAnimationFrame(loop);
+    return;
+  }
 
   const dt = rawDt * gameSpeed;
 
