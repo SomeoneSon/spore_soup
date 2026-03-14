@@ -291,6 +291,9 @@ function syncShadowPools() {
       for (const entry of shadow.pool.archive) {
         soup.pool._insertArchive(entry.genome, entry.fitness);
       }
+      // Update best fitness and reset stagnation
+      soup.pool.bestFitness = shadow.pool.bestFitness;
+      soup.pool._stagnation = 0;
     }
   }
 }
